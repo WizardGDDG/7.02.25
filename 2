@@ -1,0 +1,135 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream> // Для stringstream
+
+using namespace std;
+
+// Задание 1: Подсчет слов, начинающихся с заданного символа
+int countWordsStartingWith(const string& filePath, char startChar) {
+    ifstream file(filePath);
+    if (!file.is_open()) {
+        cout << "Ошибка: Не удалось открыть файл." << endl;
+        return -1; // Или выбросить исключение
+    }
+
+    int wordCount = 0;
+    string word;
+    while (file >> word) {
+        if (!word.empty() && tolower(word[0]) == tolower(startChar)) { // Приводим к нижнему регистру для сравнения
+            wordCount++;
+        }
+    }
+
+    file.close();
+    return wordCount;
+}
+
+// Задание 2: Замена символов 0 и 1 в строках файла
+void replaceChars(const string& inputFilePath, const string& outputFilePath) {
+    ifstream inputFile(inputFilePath);
+    ofstream outputFile(outputFilePath);
+
+    if (!inputFile.is_open() || !outputFile.is_open()) {
+        cout << "Ошибка: Не удалось открыть входной или выходной файл." << endl;
+        return;
+    }
+
+    string line;
+    while (getline(inputFile, line)) {
+        for (char& c : line) {
+            if (c == '0') {
+                c = '1';
+            } else if (c == '1') {
+                c = '0';
+            }
+        }
+        outputFile << line << endl;
+    }
+
+    inputFile.close();
+    outputFile.close();
+}
+
+// Задание 3: Запись массива строк в файл
+void writeStringArrayToFile(const string& filePath, const string* arr, int size) {
+    ofstream file(filePath);
+    if (!file.is_open()) {
+        cout << "Ошибка: Не удалось открыть файл для записи." << endl;
+        return;
+    }
+
+    for (int i = 0; i < size; ++i) {
+        file << arr[i] << endl;
+    }
+
+    file.close();
+}
+
+// Задание 4: Подсчет количества символов в файле
+int countCharacters(const string& filePath) {
+    ifstream file(filePath);
+    if (!file.is_open()) {
+        cout << "Ошибка: Не удалось открыть файл." << endl;
+        return -1; // Или выбросить исключение
+    }
+
+    file.seekg(0, ios::end); // Перемещаем указатель в конец файла
+    int charCount = file.tellg(); // Получаем текущую позицию (количество символов)
+    file.close();
+    return charCount;
+}
+
+// Задание 5: Подсчет количества строк в файле
+int countLines(const string& filePath) {
+    ifstream file(filePath);
+    if (!file.is_open()) {
+        cout << "Ошибка: Не удалось открыть файл." << endl;
+        return -1; // Или выбросить исключение
+    }
+
+    int lineCount = 0;
+    string line;
+    while (getline(file, line)) {
+        lineCount++;
+    }
+
+    file.close();
+    return lineCount;
+}
+
+int main() {
+    // Пример использования функций
+    string filePath = "example.txt";
+
+    // Задание 1
+    char startChar;
+    cout << "Введите символ для поиска: ";
+    cin >> startChar;
+    int wordCount = countWordsStartingWith(filePath, startChar);
+    if (wordCount != -1) {
+        cout << "Количество слов, начинающихся с '" << startChar << "': " << wordCount << endl;
+    }
+
+    // Задание 2
+    replaceChars("input.txt", "output.txt");
+
+    // Задание 3
+    string stringArray[] = {"Строка 1", "Строка 2", "Строка 3"};
+    int arraySize = sizeof(stringArray) / sizeof(stringArray[0]);
+    writeStringArrayToFile("array.txt", stringArray, arraySize);
+
+    // Задание 4
+    int charCount = countCharacters(filePath);
+    if (charCount != -1) {
+        cout << "Количество символов в файле: " << charCount << endl;
+    }
+
+    // Задание 5
+    int lineCount = countLines(filePath);
+    if (lineCount != -1) {
+        cout << "Количество строк в файле: " << lineCount << endl;
+    }
+
+    return 0;
+}
