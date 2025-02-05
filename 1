@@ -1,0 +1,111 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <filesystem> // C++17
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
+using namespace std;
+namespace fs = std::filesystem;
+
+// Функция для смены текущего каталога
+bool changeDirectory(const string& newPath) {
+    try {
+        fs::current_path(newPath);
+        return true;
+    } catch (const fs::filesystem_error& e) {
+        cerr << "Ошибка при смене каталога: " << e.what() << endl;
+        return false;
+    }
+}
+
+// Функция для отображения всех подкаталогов текущего каталога
+void displaySubdirectories() {
+    string currentPath = fs::current_path().string();
+    cout << "Подкаталоги в " << currentPath << ":" << endl;
+
+    for (const auto& entry : fs::directory_iterator(currentPath)) {
+        if (fs::is_directory(entry)) {
+            cout << "  " << entry.path().filename().string() << endl;
+        }
+    }
+}
+
+// Функция для отображения всех файлов текущего каталога
+void displayFiles() {
+    string currentPath = fs::current_path().string();
+    cout << "Файлы в " << currentPath << ":" << endl;
+
+    for (const auto& entry : fs::directory_iterator(currentPath)) {
+        if (fs::is_regular_file(entry)) {
+            cout << "  " << entry.path().filename().string() << endl;
+        }
+    }
+}
+
+// Функция для создания нового каталога в текущем каталоге
+bool createDirectory(const string& directoryName) {
+    try {
+        string currentPath = fs::current_path().string();
+        fs::create_directory(fs::path(currentPath) / directoryName);
+        cout << "Каталог '" << directoryName << "' создан." << endl;
+        return true;
+    } catch (const fs::filesystem_error& e) {
+        cerr << "Ошибка при создании каталога: " << e.what() << endl;
+        return false;
+    }
+}
+
+// Функция для рекурсивного удаления каталога (включая все его содержимое)
+bool removeDirectoryRecursive(const string& directoryPath) {
+    try {
+        for (const auto& entry : fs::recursive_directory_iterator(directoryPath)) {
+            fs::remove_all(entry.path());
+        }
+        fs::remove_all(directoryPath);
+        cout << "Каталог '" << directoryPath << "' удален." << endl;
+        return true;
+    } catch (const fs::filesystem_error& e) {
+        cerr << "Ошибка при удалении каталога: " << e.what() << endl;
+        return false;
+    }
+}
+
+int main() {
+    string command;
+    string currentPath;
+
+    do {
+        currentPath = fs::current_path().string();
+        cout << "\nТекущий каталог: " << currentPath << endl;
+        cout << "Введите команду (cd <путь>, dir, files, mkdir <имя>, rmdir <имя>, exit): ";
+        getline(cin, command);
+
+        if (command.substr(0, 2) == "cd") {
+            string newPath = command.substr(3);
+            if (changeDirectory(newPath)) {
+                cout << "Каталог успешно изменен." << endl;
+            }
+        } else if (command == "dir") {
+            displaySubdirectories();
+        } else if (command == "files") {
+            displayFiles();
+        } else if (command.substr(0, 5) == "mkdir") {
+            string directoryName = command.substr(6);
+            createDirectory(directoryName);
+        } else if (command.substr(0, 5) == "rmdir") {
+            string directoryName = command.substr(6);
+            removeDirectoryRecursive(directoryName);
+        } else if (command == "exit") {
+            cout << "Выход из программы." << endl;
+        } else {
+            cout << "Неизвестная команда." << endl;
+        }
+    } while (command != "exit");
+
+    return 0;
+}
